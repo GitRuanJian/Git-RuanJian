@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <title>课程管理</title>
+    <link href="https://cdn.staticfile.org/semantic-ui/2.4.1/semantic.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 12px; padding-bottom: 12px">
+<div class="ui container">
+    <div class="ui three item menu">
+        <a class="item" href="student.html">学生管理</a>
+        <a class="item" href="major.html">专业管理</a>
+        <a class="item active">课程管理</a>
+    </div>
+    <table class="ui celled definition table">
+    </table>
+</div>
+<script type="text/javascript" src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/semantic-ui/2.4.1/semantic.min.js"></script>
+<script type="text/javascript" src="semantic-frame.js"></script>
+<script>
+    $(document).ready(function () {
+        let courseType = [];
+        $.setHost('http://localhost:8080');
+
+        const init = function() {
+            $('.ui.table').feed({
+                columns: [{text: '名称', key: 'name'},
+                    {text: '类型', key: 'type', handler: (v) => {
+                        let s = '未知';
+                        for (let t of courseType) {
+                            if (t.value === v) {
+                                s = t.text;
+                                break;
+                            }
+                        }
+                        return s;
+                    }},
+                    {text: '要求年级', key: 'requiredGrade', handler: (v) => {
+                        if (v === 1) return '大一';
+                        if (v === 2) return '大二';
+                        if (v === 3) return '大三';
+                        if (v === 4) return '大四';
+                        return '无要求';
+                    }}, {text: '学时', key: 'academicHour', align: 'center'}, {text: '学分', key: 'credit', align: 'center'}],
+                addApi: '/j/cou/add',
+                deleteApi: '/j/cou/del',
+                editApi: '/j/cou/edit',
+                dataApi: '/j/cou/list',
+                numPerPage: 20,
+                formFields: [{key: 'name', label: '名称'}, {key: 'type', label: '类型', options: courseType},
+                    {key: 'requiredGrade', label: '要求年级', number: true},
+                    {key: 'academicHour', label: '学时'}, {key: 'credit', label: '学分'}],
+                query: {name: '名称'}
+            });
+        };
+
+        $.request({url: '/j/cou/type', callback: function (resp) {
+                $.each(resp.data, function(k, v) {
+                    courseType.push({value: v, text: k});
+                });
+                init();
+            }
+        });
+    });
+</script>
+</body>
+</html>

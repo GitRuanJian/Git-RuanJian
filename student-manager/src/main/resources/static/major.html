@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <title>专业管理</title>
+    <link href="https://cdn.staticfile.org/semantic-ui/2.4.1/semantic.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 12px; padding-bottom: 12px">
+<div class="ui container">
+    <div class="ui three item menu">
+        <a class="item" href="student.html">学生管理</a>
+        <a class="item active">专业管理</a>
+        <a class="item" href="course.html">课程管理</a>
+    </div>
+    <table class="ui celled definition table">
+    </table>
+</div>
+<script type="text/javascript" src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/semantic-ui/2.4.1/semantic.min.js"></script>
+<script type="text/javascript" src="semantic-frame.js"></script>
+<script>
+    $(document).ready(function () {
+        $.setHost('http://localhost:8080');
+
+        const chooseCourse = function (value) {
+            $.request({url: '/j/cou/lsm', data: {id: value.id}, callback: function (resp) {
+                let courses = [];
+                if (resp.data.courses) for (let v of resp.data.courses) courses.push({value: v.id, text: v.name});
+                $.dialog({title: value.name, fields: [{key: 'ids', label: '课程', options: courses, multiple: true}],
+                    callback: function (formVal) {
+                        formVal.receptorId = value.id;
+                        $.request({url: '/j/maj/cc', data: formVal, callback: function () {
+                                $.success('修改成功');
+                            }
+                        });
+                    }, data: {ids: resp.data.selected}
+                });
+            }});
+        };
+
+        const init = function() {
+            $('.ui.table').feed({
+                columns: {name: '名称', capacity: '人数上限', requiredCredits: '要求学分', studentNum: '学生数',
+                    courseNum: '课程数', totalCredits: '已选学分'},
+                addApi: '/j/maj/add',
+                deleteApi: '/j/maj/del',
+                editApi: '/j/maj/edit',
+                dataApi: '/j/maj/list',
+                numPerPage: 20,
+                rowButtons: [{text: '编辑课程', handler: chooseCourse}],
+                rowClass: function (value) {
+                    if (value.studentNum > value.capacity * 0.8) return 'warning';
+                },
+                formFields: [{key: 'name', label: '名称'}, {key: 'capacity', label: '人数上限', number: true},
+                    {key: 'requiredCredits', label: '要求学分', number: true}],
+                query: {name: '名称'}
+            });
+        };
+        init();
+    });
+</script>
+</body>
+</html>

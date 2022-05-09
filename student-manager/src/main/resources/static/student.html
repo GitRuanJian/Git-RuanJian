@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <title>学生管理</title>
+    <link href="https://cdn.staticfile.org/semantic-ui/2.4.1/semantic.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 12px; padding-bottom: 12px">
+<div class="ui container">
+    <div class="ui three item menu">
+        <a class="item active">学生管理</a>
+        <a class="item" href="major.html">专业管理</a>
+        <a class="item" href="course.html">课程管理</a>
+    </div>
+    <table class="ui celled definition table">
+    </table>
+</div>
+<script type="text/javascript" src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/semantic-ui/2.4.1/semantic.min.js"></script>
+<script type="text/javascript" src="semantic-frame.js"></script>
+<script>
+    $(document).ready(function () {
+        let majors = [];
+        $.setHost('http://localhost:8080');
+
+        const chooseCourse = function (value) {
+            $.request({url: '/j/cou/lsc', data: {id: value.id}, callback: function (resp) {
+                let courses = [];
+                if (resp.data.courses) for (let v of resp.data.courses) courses.push({value: v.id, text: v.name});
+                $.dialog({title: value.name, fields: [{key: 'ids', label: '课程', options: courses, multiple: true}],
+                    callback: function (formVal) {
+                        formVal.receptorId = value.id;
+                        $.request({url: '/j/stu/cc', data: formVal, callback: function () {
+                                $.success('修改成功');
+                            }
+                        });
+                    }, data: {ids: resp.data.selected}
+                });
+            }});
+        };
+
+        const init = function() {
+            $('.ui.table').feed({
+                columns: {name: '姓名', number: '学号', grade: '年级', major: '专业', courseNum: '课程数',
+                    totalCredits: '总学分', requiredCredits: '要求学分'},
+                addApi: '/j/stu/add',
+                deleteApi: '/j/stu/del',
+                editApi: '/j/stu/edit',
+                dataApi: '/j/stu/list',
+                numPerPage: 20,
+                rowButtons: [{text: '编辑课程', handler: chooseCourse}],
+                rowClass: function (value) {
+                    if (value.totalCredits < value.requiredCredits) return 'warning';
+                },
+                formFields: [{key: 'name', label: '姓名'}, {key: 'number', label: '学号'},
+                    {key: 'admissionYear', label: '入学年份', number: true},
+                    {key: 'majorId', label: '专业', options: majors}],
+                query: {name: '姓名', number: '学号'}
+            });
+        };
+
+        $.request({url: '/j/maj/name', callback: function (resp1) {
+                for (let v of resp1.data) majors.push({value: v.id, text: v.name});
+                init();
+            }
+        });
+    });
+</script>
+</body>
+</html>

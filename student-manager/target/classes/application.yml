@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/xgk_college?serverTimezone=GMT&useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    username: root
+    password: 6.67259
+  mvc:
+    static-path-pattern: /**
+  transaction:
+    rollback-on-commit-failure: true
+  web:
+    resources:
+      static-locations: classpath:/static/
+server:
+  servlet:
+    session:
+      timeout: 7200
+  max-http-header-size: 16384
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
